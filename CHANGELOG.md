@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.11] - 2025-12-30
+
+### Added
+
+- HolyImouto (holyi) programming language.
+
+
 ## [0.0.10] - 2025-12-12
 
 ### Added
