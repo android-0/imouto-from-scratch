@@ -132,7 +132,7 @@ end
 
 local paths = {
   [''] = { 'to', 'to_not' },
-  to = { 'have', 'equal', 'be', 'exist', 'fail', 'match' },
+  to = { 'have', 'equal', 'diff', 'be', 'exist', 'fail', 'match' },
   to_not = { 'have', 'equal', 'be', 'exist', 'fail', 'match', chain = function(a) a.negate = not a.negate end },
   a = { test = isa },
   an = { test = isa },
@@ -169,6 +169,21 @@ local paths = {
 
       return equal,
         'expected ' .. tostring(v) .. ' and ' .. tostring(x) .. ' to be equal' .. comparison,
+        'expected ' .. tostring(v) .. ' and ' .. tostring(x) .. ' to not be equal'
+    end
+  },
+  -- This my own addition.
+  diff = {
+    test = function(v, x, eps)
+      local comparison = ''
+      local equal = eq(v, x, eps)
+
+      if type(v) ~= 'string' or type(x) ~= 'string' then
+          error("lust: diff args must be string")
+      end
+
+      return equal,
+        '\n----- expected\n' .. tostring(v) .. '\n----- got\n' .. tostring(x),
         'expected ' .. tostring(v) .. ' and ' .. tostring(x) .. ' to not be equal'
     end
   },

@@ -73,7 +73,7 @@ local function check_expr(expr, tenv)
         local el_type = primitives.Any
         for _, el in ipairs(expr.array) do
             local t = check_expr(el, tenv)
-            assert_eq(el_type, t)
+            assert_eq(t, el_type, "array element type mismatch")
             el_type = t
         end
         return ArrayType(el_type)

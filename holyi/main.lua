@@ -22,8 +22,12 @@ local typecheck = require("typecheck")
 local eval      = require("eval")
 local envir     = require("envir")
 local std       = require("std")
+local inspect = require("libraries/inspect")
 
-local function run_file(path, env, tenv)
+local M = {}
+M.print = print
+
+function M.run_file(path, env, tenv)
     local file = io.open(path, "r")
     if not file then
         error("failed to open file: " .. path)
@@ -50,14 +54,54 @@ local function run_file(path, env, tenv)
         return;
     end
 
-    local ok, err = pcall(eval, parser_result, env)
+    local ok, err = pcall(eval.eval, parser_result, env)
     if not ok then
         print(err)
         return;
     end
 end
 
-do
+function M.setup(writefn)
+    eval.print = writefn
+    M.print = writefn
+end
+
+function M.run_string(src)
+    local env, tenv = {}, {}
+
+    for name, proc in pairs(std.procedures) do
+        env[name]  = proc.data
+        tenv[name] = proc.type
+    end
+    local env, tenv = envir.new(env), envir.new(tenv)
+
+    local ok, lexer_result = pcall(lexer, src)
+    if not ok then
+        M.print(lexer_result)
+        return;
+    end
+
+    local ok, parser_result = pcall(parser, lexer_result)
+    if not ok then
+        M.print(parser_result)
+        return;
+    end
+
+    local ok, err = pcall(typecheck, parser_result, tenv)
+    if not ok then
+        M.print(err)
+        return;
+    end
+
+    local ok, err = pcall(eval.eval, parser_result, env)
+    if not ok then
+        M.print(err)
+        return;
+    end
+end
+
+-- Run as script.
+if arg[0] == "main.lua" then
     local env, tenv = {}, {}
 
     for name, proc in pairs(std.procedures) do
@@ -70,6 +114,10 @@ do
     if #arg == 0 then
         print("Usage: lua main.lua <file>")
     else
-        run_file(arg[1], env, tenv)
+        M.run_file(arg[1], env, tenv)
     end
+
+    return
 end
+
+return M

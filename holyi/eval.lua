@@ -5,12 +5,15 @@ local inspect = require("libraries/inspect")
 local TT, NT, IT = types.TT, types.NT, types.IT
 local Int, Bool, String, unit, Array = types.Int, types.Bool, types.String, types.unit, types.Array
 
+local eval = {}
+eval.print = print
+
 function eval_stmt(node, env)
     local tag = node.tag
 
     if tag == NT.SHOW then
         local value = eval_expr(node.expr, env)
-        print(value)
+        eval.print(tostring(value))
 
     elseif tag == NT.IF then
         local cond = eval_expr(node.cond, env)
@@ -177,7 +180,7 @@ function eval_expr(node, env)
     end
 end
 
-local function eval(stmts, env)
+function eval.eval(stmts, env)
     for _, stmt in ipairs(stmts) do
         eval_stmt(stmt, env)
     end
